@@ -1,2 +1,2 @@
 # yii2-oauth2-server
-OAuth2 Server for Yii2.
+在 Yii2 中实现 OAuth2 服务器模块。
