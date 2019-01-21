@@ -6,6 +6,7 @@
 /* @var $scopeEntities \devzyj\yii2\oauth2\server\entities\ScopeEntity[]  */
 /* @var $user \yii\web\User */
 /* @var $loginUrl string */
+/* @var $logoutUrl string */
 
 use yii\bootstrap\Html;
 use yii\bootstrap\ActiveForm;
@@ -66,6 +67,7 @@ $this->title = 'OAuth2 Authorization Demo';
                     if (!$user->getIsGuest()) {
                         $userIdentity = $user->getIdentity();
                         $authorizationContent[] = Html::staticControl('User ID: ' . $userIdentity->getId());
+                        $authorizationContent[] = Html::a('Logout', $logoutUrl);
                         $items[] = [
                             'label' => 'Authorization',
                             'content' => Html::tag('p', implode('', $authorizationContent)),

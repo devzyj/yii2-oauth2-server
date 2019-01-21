@@ -11,7 +11,7 @@ use yii\db\Migration;
 /**
  * Class m181203_032806_oauth2_server_initial
  * 
- * php yii migrate --migrationPath=@devjerry/yii2-oauth2-server/migrations
+ * php yii migrate --migrationPath=@devzyj/yii2-oauth2-server/migrations
  */
 class m181203_032806_oauth2_server_initial extends Migration
 {

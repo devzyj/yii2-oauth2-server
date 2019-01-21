@@ -113,9 +113,19 @@ class DemoController extends \yii\web\Controller
             'model' => $model,
             'clientEntity' => $this->getClientEntity($clientId),
             'scopeEntities' => $this->getScopeEntities($scopes),
-            'loginUrl' => $this->makeLoginUrl(),
             'user' => $this->getUser(),
+            'loginUrl' => $this->makeLoginUrl(),
+            'logoutUrl' => Url::to(['logout']),
         ]);
+    }
+    
+    /**
+     * 注销用户。
+     */
+    public function actionLogout()
+    {
+        $this->getUser()->logout();
+        return $this->redirect(Yii::$app->getRequest()->getReferrer());
     }
     
     /**
