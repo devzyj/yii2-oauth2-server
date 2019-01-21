@@ -1,7 +1,7 @@
 {
     "name": "devzyj/yii2-oauth2-server",
     "description": "OAuth server for Yii2.",
-    "keywords": ["yii2", "extension", "oauth", "server"],
+    "keywords": ["yii2", "extension", "oauth", "oauth2", "server"],
     "type": "yii2-extension",
     "license": "BSD-3-Clause",
     "authors": [
@@ -13,21 +13,25 @@
     "require": {
         "php": ">=5.5.0",
         "yiisoft/yii2": "*",
-        "lcobucci/jwt": "^3.2",
-        "defuse/php-encryption": "^2.1",
-        "paragonie/random_compat": "^2.0",
+        "devzyj/php-oauth2-server": "dev-master"
     },
     "require-dev": {
         "codeception/codeception": "~2.5"
     },
     "autoload": {
         "psr-4": {
-            "devzyj\\oauth2\\server": "src/"
+            "devzyj\\yii2\\oauth2\\server": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "devzyj\\oauth2\\server\\tests\\": "tests/"
+            "devzyj\\yii2\\oauth2\\server\\tests\\": "tests/"
         }
-    }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/devzyj/php-oauth2-server"
+        }
+    ]
 }
