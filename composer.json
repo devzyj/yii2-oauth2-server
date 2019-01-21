@@ -20,7 +20,7 @@
     },
     "autoload": {
         "psr-4": {
-            "devzyj\\yii2\\oauth2\\server": "src/"
+            "devzyj\\yii2\\oauth2\\server\\": "src/"
         }
     },
     "autoload-dev": {

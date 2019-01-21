@@ -4,6 +4,7 @@
  * @copyright Copyright (c) 2018 Zhang Yan Jiong
  * @license http://opensource.org/licenses/BSD-3-Clause
  */
+namespace devzyj\yii2\oauth2\server\migrations;
  
 use yii\db\Migration;
 
