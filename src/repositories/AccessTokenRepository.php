@@ -20,7 +20,10 @@ use devzyj\yii2\oauth2\server\entities\AccessTokenEntity;
  */
 class AccessTokenRepository implements AccessTokenRepositoryInterface
 {
-    use AccessTokenRepositoryTrait;
+    use AccessTokenRepositoryTrait {
+        serializeAccessTokenEntity as protected parentSerializeAccessTokenEntity;
+        unserializeAccessTokenEntity as protected parentUnserializeAccessTokenEntity;
+    }
     
     /**
      * {@inheritdoc}
@@ -54,5 +57,29 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
     public function isAccessTokenEntityRevoked($identifier)
     {
         return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function serializeAccessTokenEntity(AccessTokenEntityInterface $accessTokenEntity, $cryptKey)
+    {
+        if (isset($cryptKey['privateKey'])) {
+            $cryptKey['privateKey'] = Yii::getAlias($cryptKey['privateKey']);
+        }
+        
+        return $this->parentSerializeAccessTokenEntity($accessTokenEntity, $cryptKey);
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function unserializeAccessTokenEntity($serializedAccessToken, $cryptKey)
+    {
+        if (isset($cryptKey['publicKey'])) {
+            $cryptKey['publicKey'] = Yii::getAlias($cryptKey['publicKey']);
+        }
+        
+        return $this->parentUnserializeAccessTokenEntity($serializedAccessToken, $cryptKey);
     }
 }

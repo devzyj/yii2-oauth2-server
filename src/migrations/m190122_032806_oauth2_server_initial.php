@@ -4,16 +4,15 @@
  * @copyright Copyright (c) 2018 Zhang Yan Jiong
  * @license http://opensource.org/licenses/BSD-3-Clause
  */
-namespace devzyj\yii2\oauth2\server\migrations;
- 
+
 use yii\db\Migration;
 
 /**
- * Class m181203_032806_oauth2_server_initial
+ * Class m190122_032806_oauth2_server_initial
  * 
- * php yii migrate --migrationPath=@devzyj/yii2-oauth2-server/migrations
+ * php yii migrate --migrationPath=@devzyj/yii2/oauth2/server/migrations
  */
-class m181203_032806_oauth2_server_initial extends Migration
+class m190122_032806_oauth2_server_initial extends Migration
 {
     /**
      * @var array 全部数据表名。
@@ -60,6 +59,7 @@ class m181203_032806_oauth2_server_initial extends Migration
             'redirect_uri' => $this->string(255)->notNull()->comment('回调地址'),
             'access_token_duration' => $this->integer(10)->unsigned()->notNull()->comment('访问令牌的持续时间'),
             'refresh_token_duration' => $this->integer(10)->unsigned()->notNull()->comment('更新令牌的持续时间'),
+            'create_time' => $this->integer(10)->unsigned()->notNull()->comment('创建时间'),
         ], "COMMENT='OAuth - 客户端表'");
         
         // oauth_scope
@@ -106,8 +106,9 @@ class m181203_032806_oauth2_server_initial extends Migration
             'secret' => '692569f364854bc130687297c770c2c0',
             'grant_types' => 'authorization_code implicit password client_credentials refresh_token',
             'redirect_uri' => 'http://backend.application.yii2.devzyj.zyj/test/oauth-callback',
-            'access_token_duration' => 10800, // 3 hours
+            'access_token_duration' => 3600, // 1 hours
             'refresh_token_duration' => 2592000, // 30 days
+            'create_time' => time(),
         ]);
         $clientId = $this->db->getLastInsertID();
 

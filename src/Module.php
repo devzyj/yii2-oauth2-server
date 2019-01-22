@@ -185,4 +185,17 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
             Yii::$container->set($class, $definition);
         }
     }
+    
+    /**
+     * 验证访问令牌。
+     * 
+     * @param string $accessToken
+     * @return array
+     */
+    public function validateAccessToken($accessToken)
+    {
+        /* @var $controller \devzyj\yii2\oauth2\server\controllers\ResourceController */
+        $controller = $this->createControllerByID('resource');
+        return $controller->validateAccessToken($accessToken);
+    }
 }

@@ -20,7 +20,10 @@ use devzyj\yii2\oauth2\server\entities\RefreshTokenEntity;
  */
 class RefreshTokenRepository implements RefreshTokenRepositoryInterface
 {
-    use RefreshTokenRepositoryTrait;
+    use RefreshTokenRepositoryTrait {
+        serializeRefreshTokenEntity as protected parentSerializeRefreshTokenEntity;
+        unserializeRefreshTokenEntity as protected parentUnserializeRefreshTokenEntity;
+    }
     
     /**
      * {@inheritdoc}
@@ -54,5 +57,29 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
     public function isRefreshTokenEntityRevoked($identifier)
     {
         return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function serializeRefreshTokenEntity(RefreshTokenEntityInterface $refreshTokenEntity, $cryptKey)
+    {
+        if (isset($cryptKey['path'])) {
+            $cryptKey['path'] = Yii::getAlias($cryptKey['path']);
+        }
+        
+        return $this->parentSerializeRefreshTokenEntity($refreshTokenEntity, $cryptKey);
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function unserializeRefreshTokenEntity($serializedRefreshToken, $cryptKey)
+    {
+        if (isset($cryptKey['path'])) {
+            $cryptKey['path'] = Yii::getAlias($cryptKey['path']);
+        }
+        
+        return $this->parentUnserializeRefreshTokenEntity($serializedRefreshToken, $cryptKey);
     }
 }

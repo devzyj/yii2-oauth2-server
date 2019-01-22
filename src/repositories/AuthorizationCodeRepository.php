@@ -20,7 +20,10 @@ use devzyj\yii2\oauth2\server\entities\AuthorizationCodeEntity;
  */
 class AuthorizationCodeRepository implements AuthorizationCodeRepositoryInterface
 {
-    use AuthorizationCodeRepositoryTrait;
+    use AuthorizationCodeRepositoryTrait {
+        serializeAuthorizationCodeEntity as protected parentSerializeAuthorizationCodeEntity;
+        unserializeAuthorizationCodeEntity as protected parentUnserializeAuthorizationCodeEntity;
+    }
     
     /**
      * {@inheritdoc}
@@ -54,5 +57,29 @@ class AuthorizationCodeRepository implements AuthorizationCodeRepositoryInterfac
     public function isAuthorizationCodeEntityRevoked($identifier)
     {
         return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function serializeAuthorizationCodeEntity(AuthorizationCodeEntityInterface $authorizationCodeEntity, $cryptKey)
+    {
+        if (isset($cryptKey['path'])) {
+            $cryptKey['path'] = Yii::getAlias($cryptKey['path']);
+        }
+        
+        return $this->parentSerializeAuthorizationCodeEntity($authorizationCodeEntity, $cryptKey);
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function unserializeAuthorizationCodeEntity($serializedAuthorizationCode, $cryptKey)
+    {
+        if (isset($cryptKey['path'])) {
+            $cryptKey['path'] = Yii::getAlias($cryptKey['path']);
+        }
+        
+        return $this->parentUnserializeAuthorizationCodeEntity($serializedAuthorizationCode, $cryptKey);
     }
 }

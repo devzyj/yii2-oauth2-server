@@ -46,23 +46,12 @@ class ResourceController extends \yii\web\Controller
     }
     
     /**
-     * 用于远程验证访问令牌。
+     * 用于远程验证服务器请求的认证信息。
      * 
      * @return array 访问令牌的内容。
      * @throws HttpException 缺少参数，或者无效的访问令牌。
      */
     public function actionIndex()
-    {
-        return $this->validateServerRequest();
-    }
-    
-    /**
-     * 验证服务器请求的认证信息。
-     * 
-     * @return array 访问令牌的内容。
-     * @throws HttpException 缺少参数，或者无效的访问令牌。
-     */
-    public function validateServerRequest()
     {
         $resourceServer = $this->createResourceServer();
         
