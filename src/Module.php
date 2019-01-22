@@ -7,6 +7,8 @@
 namespace devzyj\yii2\oauth2\server;
 
 use Yii;
+use yii\db\Connection;
+use yii\web\User;
 use devzyj\oauth2\server\authorizes\CodeAuthorize;
 use devzyj\oauth2\server\authorizes\ImplicitAuthorize;
 use devzyj\oauth2\server\grants\AuthorizationCodeGrant;
@@ -129,6 +131,11 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
     public $refreshTokenCryptKey;
 
     /**
+     * @var string 数据库连接的应用组件ID。如果没有设置，则使用 `Yii::$app->getDb()`。
+     */
+    public $db;
+    
+    /**
      * @var string|array 授权用户的应用组件ID或配置。如果没有设置，则使用 `Yii::$app->getUser()`。
      */
     public $user;
@@ -166,7 +173,7 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
      * @see ResourceController::validateAccessTokenResult()
      */
     public $validateAccessTokenResult;
-
+    
     /**
      * {@inheritdoc}
      */
@@ -187,8 +194,40 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
     }
     
     /**
-     * 验证访问令牌。
+     * 获取数据库连接对像。
      * 
+     * @return Connection
+     */
+    public function getDb()
+    {
+        if ($this->db === null) {
+            return Yii::$app->getDb();
+        } elseif (is_string($this->db)) {
+            return Yii::$app->get($this->db);
+        }
+        
+        return Yii::createObject($this->db);
+    }
+
+    /**
+     * 获取授权用户。
+     *
+     * @return User
+     */
+    public function getUser()
+    {
+        if ($this->user === null) {
+            return Yii::$app->getUser();
+        } elseif (is_string($this->user)) {
+            return Yii::$app->get($this->user);
+        }
+    
+        return Yii::createObject($this->user);
+    }
+    
+    /**
+     * 验证访问令牌。
+     *
      * @param string $accessToken
      * @return array
      */
@@ -198,4 +237,5 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
         $controller = $this->createControllerByID('resource');
         return $controller->validateAccessToken($accessToken);
     }
+    
 }

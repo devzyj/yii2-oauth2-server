@@ -133,15 +133,9 @@ class DemoController extends \yii\web\Controller
      * 
      * @return User
      */
-    public function getUser()
+    protected function getUser()
     {
-        if ($this->module->user === null) {
-            return Yii::$app->getUser();
-        } elseif (is_string($this->module->user)) {
-            return Yii::$app->get($this->module->user);
-        }
-        
-        return Yii::createObject($this->module->user);
+        return $this->module->getUser();
     }
     
     /**

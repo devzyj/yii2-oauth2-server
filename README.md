@@ -17,6 +17,10 @@ or add
 
 # Usage
 
+```bash
+php yii migrate --migrationPath=@devzyj/yii2/oauth2/server/migrations
+```
+
 ```php
 // config.php
 return [

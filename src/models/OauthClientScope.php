@@ -44,6 +44,19 @@ class OauthClientScope extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
+    public static function getDb()
+    {
+        $module = Yii::$app->controller->module;
+        if ($module instanceof \devzyj\yii2\oauth2\server\Module) {
+            return $module->getDb();
+        }
+    
+        return parent::getDb();
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
     public function rules()
     {
         return [

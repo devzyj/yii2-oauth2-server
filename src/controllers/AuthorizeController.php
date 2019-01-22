@@ -34,7 +34,7 @@ class AuthorizeController extends \yii\web\Controller
                 'accessTokenCryptKey' => $module->accessTokenCryptKey,
                 'authorizationCodeDuration' => $module->authorizationCodeDuration,
                 'authorizationCodeCryptKey' => $module->authorizationCodeCryptKey,
-                'user' => $module->user,
+                'user' => $module->getUser(),
                 'loginUrl' => $module->loginUrl,
                 'authorizationUrl' => $module->authorizationUrl,
             ],

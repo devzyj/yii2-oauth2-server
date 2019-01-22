@@ -43,12 +43,12 @@ class AuthorizeAction extends \yii\base\Action
     
     /**
      * @var array 默认权限。
-    */
+     */
     public $defaultScopes;
     
     /**
      * @var integer 访问令牌的持续时间。
-    */
+     */
     public $accessTokenDuration;
     
     /**
@@ -67,7 +67,7 @@ class AuthorizeAction extends \yii\base\Action
     public $authorizationCodeCryptKey;
     
     /**
-     * @var string|array 授权用户的应用组件ID或配置。如果没有设置，则使用 `Yii::$app->getUser()`。
+     * @var User 授权用户。
      */
     public $user;
     
@@ -92,6 +92,8 @@ class AuthorizeAction extends \yii\base\Action
             throw new InvalidConfigException('The `authorizeTypeClasses` property must be set.');
         } elseif ($this->userRepositoryClass === null) {
             throw new InvalidConfigException('The `userRepositoryClass` property must be set.');
+        } elseif ($this->user === null) {
+            throw new InvalidConfigException('The `user` property must be set.');
         } elseif ($this->loginUrl === null) {
             throw new InvalidConfigException('The `loginUrl` property must be set.');
         } elseif ($this->authorizationUrl === null) {
@@ -114,17 +116,14 @@ class AuthorizeAction extends \yii\base\Action
             // 获取并验证授权请求。
             $authorizeRequest = $authorizationServer->getAuthorizeRequest($serverRequest);
 
-            // 获取授权用户。
-            $user = $this->getUser();
-            
             // 判断用户是否登录。
-            if ($user->getIsGuest()) {
+            if ($this->user->getIsGuest()) {
                 // 用户未登录，重定向到登录页面。
                 return $this->controller->redirect($this->makeLoginUrl($authorizeRequest));
             }
             
             // 已登录的授权用户。
-            $userIdentity = $user->getIdentity();
+            $userIdentity = $this->user->getIdentity();
             if (!$userIdentity instanceof OAuthIdentityInterface) {
                 throw new InvalidConfigException('The `User::identity` does not implement OAuthIdentityInterface.');
             }
@@ -197,22 +196,6 @@ class AuthorizeAction extends \yii\base\Action
     protected function getServerRequest()
     {
         return Yii::createObject(ServerRequest::class);
-    }
-    
-    /**
-     * 获取授权用户。
-     * 
-     * @return User
-     */
-    protected function getUser()
-    {
-        if ($this->user === null) {
-            return Yii::$app->getUser();
-        } elseif (is_string($this->user)) {
-            return Yii::$app->get($this->user);
-        }
-        
-        return Yii::createObject($this->user);
     }
     
     /**
