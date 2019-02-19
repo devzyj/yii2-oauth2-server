@@ -52,9 +52,18 @@ return [
             ],
             'loginUrl' => ['login'],
             'authorizationUrl' => ['authorization'],
+            'classMap' => [ // 依赖注入。替换模块中使用的类。
+                //'devzyj\yii2\oauth2\server\ServerRequest' => 'app\models\ServerRequest',
+                ....
+                ....
+            ],
         ],
     ],
-]
+];
+
+// 使用模块方法，验证访问令牌。
+$module = Yii::$app->getModule('oauth2');
+$tokenInfo = $module->validateAccessToken($accessToken);
 ```
 
 ```php
