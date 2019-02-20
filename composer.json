@@ -13,7 +13,7 @@
     "require": {
         "php": ">=5.5.0",
         "yiisoft/yii2": "*",
-        "devzyj/php-oauth2-server": "dev-master"
+        "devzyj/php-oauth2-server": "~1.0.0"
     },
     "require-dev": {
         "codeception/codeception": "~2.5"
@@ -27,11 +27,5 @@
         "psr-4": {
             "devzyj\\yii2\\oauth2\\server\\tests\\": "tests/"
         }
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/devzyj/php-oauth2-server"
-        }
-    ]
+    }
 }
