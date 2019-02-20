@@ -10,16 +10,12 @@ use devzyj\oauth2\server\interfaces\ScopeRepositoryInterface;
 use devzyj\oauth2\server\interfaces\ScopeEntityInterface;
 use devzyj\oauth2\server\interfaces\ClientEntityInterface;
 use devzyj\oauth2\server\interfaces\UserEntityInterface;
-use devzyj\yii2\oauth2\server\interfaces\OAuthClientEntityInterface;
-use devzyj\yii2\oauth2\server\interfaces\OAuthUserEntityInterface;
+use devzyj\oauth2\server\base\AbstractAuthorizeGrant;
 use devzyj\yii2\oauth2\server\entities\ScopeEntity;
+use devzyj\yii2\oauth2\server\entities\ClientEntity;
 
 /**
  * ScopeRepository class.
- * 
- * 使用类必须实现以下条件：
- * 1. `ClientEntity` 必须实现 [[OAuthClientEntityInterface]] 接口。
- * 2. `UserEntity` 必须实现 [[OAuthUserEntityInterface]] 接口。
  * 
  * @author ZhangYanJiong <zhangyanjiong@163.com>
  * @since 1.0
@@ -45,85 +41,109 @@ class ScopeRepository implements ScopeRepositoryInterface
      */
     public function finalizeEntities(array $scopes, $grantType, ClientEntityInterface $client, UserEntityInterface $user = null)
     {
-        if (empty($scopes)) {
-            return [];
-        }
-        
-        if ($grantType === 'client_credentials') {
-            // 客户端权限授予模式，确认客户端的权限。
-            return $this->ensureClientCredentials($scopes, $client);
-        } elseif ($user !== null) {
-            // 确认用户的权限。
-            return $this->ensureUserCredentials($scopes, $client, $user);
-        }
-        
-        return $scopes;
-    }
-    
-    /**
-     * 确认客户端的权限。
-     * 
-     * @param ScopeEntityInterface[] $scopes 请求的权限列表。 
-     * @param OAuthClientEntityInterface $client 客户端。
-     * @return ScopeEntityInterface[] 有效的权限列表。
-     */
-    protected function ensureClientCredentials(array $scopes, OAuthClientEntityInterface $client)
-    {
-        $clientScopes = $client->getScopeEntities();
-        if (!is_array($clientScopes)) {
-            return $scopes;
-        }
-        
-        return $this->ensureScopes($scopes, $clientScopes);
-    }
-    
-    /**
-     * 确认用户的权限。
-     * 
-     * @param ScopeEntityInterface[] $scopes 请求的权限列表。 
-     * @param OAuthClientEntityInterface $client 客户端。
-     * @param OAuthUserEntityInterface $user 用户。
-     * @return ScopeEntityInterface[] 有效的权限列表。
-     */
-    protected function ensureUserCredentials(array $scopes, OAuthClientEntityInterface $client, OAuthUserEntityInterface $user)
-    {
-        $userScopes = $user->getScopeEntities();
-        if (!is_array($userScopes)) {
-            return $scopes;
-        }
-        
-        return $this->ensureScopes($scopes, $userScopes);
-    }
-
-    /**
-     * 确认客户端或者用户的有效权限。
-     *
-     * @param ScopeEntityInterface[] $scopes 请求的权限列表。
-     * @param ScopeEntityInterface[] $entityScopes 客户端或者用户的全部权限列表。
-     * @return ScopeEntityInterface[] 有效的权限列表。
-     */
-    protected function ensureScopes(array $scopes, array $entityScopes)
-    {
-        $indexScopes = [];
-        foreach ($scopes as $scope) {
-            $indexScopes[$scope->getIdentifier()] = $scope;
-        }
-        
-        $indexEntityScopes = [];
-        foreach ($entityScopes as $entityScope) {
-            $indexEntityScopes[$entityScope->getIdentifier()] = $entityScope;
-        }
-        
-        // 检查权限是否有效。
-        $result = [];
-        /* @var $scope ScopeEntityInterface */
-        foreach ($indexScopes as $identifier => $scope) {
-            if (isset($indexEntityScopes[$identifier])) {
-                $result[] = $scope;
+        if ($scopes) {
+            if ($grantType === AbstractAuthorizeGrant::GRANT_TYPE_AUTHORIZATION_CODE) {
+                // 授权码模式。
+                return $this->ensureAuthorizationCode($scopes, $client, $user);
+            } elseif ($grantType === AbstractAuthorizeGrant::GRANT_TYPE_IMPLICIT) {
+                // 简单模式。
+                return $this->ensureImplicit($scopes, $client, $user);
+            } elseif ($grantType === AbstractAuthorizeGrant::GRANT_TYPE_PASSWORD) {
+                // 用户名密码模式。
+                return $this->ensurePassword($scopes, $client, $user);
+            } elseif ($grantType === AbstractAuthorizeGrant::GRANT_TYPE_CLIENT_CREDENTIALS) {
+                // 客户端模式。
+                return $this->ensureClientCredentials($scopes, $client);
+            } elseif ($grantType === AbstractAuthorizeGrant::GRANT_TYPE_REFRESH_TOKEN) {
+                // 更新令牌。
+                return $this->ensureRefreshToken($scopes, $client, $user);
             }
         }
         
-        // 返回有效的权限。
-        return $result;
+        return [];
+    }
+
+    /**
+     * 确认授权码模式的权限。
+     *
+     * @param ScopeEntityInterface[] $scopes 请求的权限列表。
+     * @param ClientEntity $client 客户端。
+     * @param UserEntityInterface $user 用户。
+     * @return ScopeEntityInterface[] 有效的权限列表。
+     */
+    protected function ensureAuthorizationCode(array $scopes, $client, $user)
+    {
+        $scopeIdentifiers = array_map(function (ScopeEntityInterface $scope) {
+            return $scope->getIdentifier();
+        }, $scopes);
+        
+        return $client->getOauthScopes()->andWhere(['identifier' => $scopeIdentifiers])->all();
+    }
+
+    /**
+     * 确认简单模式的权限。
+     *
+     * @param ScopeEntityInterface[] $scopes 请求的权限列表。
+     * @param ClientEntity $client 客户端。
+     * @param UserEntityInterface $user 用户。
+     * @return ScopeEntityInterface[] 有效的权限列表。
+     */
+    protected function ensureImplicit(array $scopes, $client, $user)
+    {
+        $scopeIdentifiers = array_map(function (ScopeEntityInterface $scope) {
+            return $scope->getIdentifier();
+        }, $scopes);
+        
+        return $client->getOauthScopes()->andWhere(['identifier' => $scopeIdentifiers])->all();
+    }
+
+    /**
+     * 确认用户名密码模式的权限。
+     *
+     * @param ScopeEntityInterface[] $scopes 请求的权限列表。
+     * @param ClientEntity $client 客户端。
+     * @param UserEntityInterface $user 用户。
+     * @return ScopeEntityInterface[] 有效的权限列表。
+     */
+    protected function ensurePassword(array $scopes, $client, $user)
+    {
+        $scopeIdentifiers = array_map(function (ScopeEntityInterface $scope) {
+            return $scope->getIdentifier();
+        }, $scopes);
+        
+        return $client->getOauthScopes()->andWhere(['identifier' => $scopeIdentifiers])->all();
+    }
+    
+    /**
+     * 确认客户端模式的权限。
+     * 
+     * @param ScopeEntityInterface[] $scopes 请求的权限列表。 
+     * @param ClientEntity $client 客户端。
+     * @return ScopeEntityInterface[] 有效的权限列表。
+     */
+    protected function ensureClientCredentials(array $scopes, $client)
+    {
+        $scopeIdentifiers = array_map(function (ScopeEntityInterface $scope) {
+            return $scope->getIdentifier();
+        }, $scopes);
+        
+        return $client->getOauthScopes()->andWhere(['identifier' => $scopeIdentifiers])->all();
+    }
+    
+    /**
+     * 确认更新令牌时的权限。
+     *
+     * @param ScopeEntityInterface[] $scopes 请求的权限列表。
+     * @param ClientEntity $client 客户端。
+     * @param UserEntityInterface $user 用户。
+     * @return ScopeEntityInterface[] 有效的权限列表。
+     */
+    protected function ensureRefreshToken(array $scopes, $client, $user)
+    {
+        $scopeIdentifiers = array_map(function (ScopeEntityInterface $scope) {
+            return $scope->getIdentifier();
+        }, $scopes);
+        
+        return $client->getOauthScopes()->andWhere(['identifier' => $scopeIdentifiers])->all();
     }
 }

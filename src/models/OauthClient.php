@@ -13,17 +13,21 @@ use Yii;
  *
  * @property int $id ID
  * @property string $name 名称
+ * @property string $description 描述
  * @property string $identifier 标识
  * @property string $secret 密钥
  * @property string $grant_types 授权类型
  * @property string $redirect_uri 回调地址
  * @property int $access_token_duration 访问令牌的持续时间
  * @property int $refresh_token_duration 更新令牌的持续时间
+ * @property int $create_time 创建时间
+ * @property int $status 状态（0=禁用；1=可用）
  *
  * @property OauthClientScope[] $oauthClientScopes 客户端与权限的关联关系
  * @property OauthScope[] $oauthScopes 客户端的权限
  * @property OauthScope[] $defaultOauthScopes 客户端的默认权限
  * 
+ * @property boolean $isValid 客户端是否有效
  * @property string[] $grantTypes 客户端的授权类型
  * @property string[] $redirectUri 客户端的回调地址
  *
@@ -32,6 +36,16 @@ use Yii;
  */
 class OauthClient extends \yii\db\ActiveRecord
 {
+    /**
+     * @var integer 状态 - 禁用的。
+     */
+    const STATUS_DISABLED = 0;
+
+    /**
+     * @var integer 状态 - 启用的。
+     */
+    const STATUS_ENABLED = 1;
+    
     /**
      * {@inheritdoc}
      */
@@ -52,6 +66,34 @@ class OauthClient extends \yii\db\ActiveRecord
         
         return parent::getDb();
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors()
+    {
+        return [
+            'timestampBehavior' => [
+                'class' => 'yii\behaviors\TimestampBehavior',
+                'createdAtAttribute' => 'create_time',
+                'updatedAtAttribute' => null,
+            ],
+            'attributesBehavior' => [
+                'class' => 'yii\behaviors\AttributesBehavior',
+                'preserveNonEmptyValues' => true,
+                'attributes' => [
+                    'identifier' => [
+                        self::EVENT_BEFORE_INSERT => $fn = [static::class, 'generateIdentifier'],
+                        self::EVENT_BEFORE_UPDATE => $fn,
+                    ],
+                    'secret' => [
+                        self::EVENT_BEFORE_INSERT => $fn = [static::class, 'generateSecret'],
+                        self::EVENT_BEFORE_UPDATE => $fn,
+                    ],
+                ]
+            ],
+        ];
+    }
     
     /**
      * {@inheritdoc}
@@ -59,16 +101,12 @@ class OauthClient extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'identifier', 'secret', 'grant_types', 'redirect_uri', 'access_token_duration', 'refresh_token_duration'], 'required'],
-            [['access_token_duration', 'refresh_token_duration'], 'integer'],
+            [['name'], 'required'],
+            [['access_token_duration', 'refresh_token_duration', 'status'], 'integer'],
             [['name'], 'string', 'max' => 50],
-            [['identifier'], 'string', 'max' => 20],
-            [['secret'], 'string', 'max' => 32],
+            [['description', 'redirect_uri'], 'string', 'max' => 255],
             [['grant_types'], 'string', 'max' => 100],
-            [['redirect_uri'], 'string', 'max' => 255],
             [['name'], 'unique'],
-            [['identifier'], 'unique'],
-            [['secret'], 'unique'],
         ];
     }
 
@@ -80,12 +118,15 @@ class OauthClient extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'name' => 'Name',
+            'description' => 'Description',
             'identifier' => 'Identifier',
             'secret' => 'Secret',
             'grant_types' => 'Grant Types',
             'redirect_uri' => 'Redirect Uri',
             'access_token_duration' => 'Access Token Duration',
             'refresh_token_duration' => 'Refresh Token Duration',
+            'create_time' => 'Create Time',
+            'status' => 'Status',
         ];
     }
 
@@ -115,7 +156,7 @@ class OauthClient extends \yii\db\ActiveRecord
     public function getDefaultOauthScopes()
     {
         return $this->hasMany(OauthScope::class, ['id' => 'scope_id'])->viaTable(OauthClientScope::tableName(), ['client_id' => 'id'], function ($query) {
-            $query->andWhere(['is_default'=>OauthClientScope::IS_DEFAULT_YES]);
+            $query->andWhere(['is_default' => OauthClientScope::IS_DEFAULT_YES]);
         });
     }
     
@@ -130,6 +171,36 @@ class OauthClient extends \yii\db\ActiveRecord
         return static::findOne(['identifier' => $identifier]);
     }
 
+    /**
+     * 生成客户端标识。
+     *
+     * @return string
+     */
+    public static function generateIdentifier()
+    {
+        return substr(md5(microtime().rand(1000, 9999)), 8, 16);
+    }
+    
+    /**
+     * 生成客户端密钥。
+     *
+     * @return string
+     */
+    public static function generateSecret()
+    {
+        return md5(microtime().rand(1000, 9999));
+    }
+    
+    /**
+     * 获取客户端是否有效。
+     *
+     * @return boolean
+     */
+    public function getIsValid()
+    {
+        return $this->status === self::STATUS_ENABLED;
+    }
+    
     /**
      * 获取客户端的授权类型。
      *

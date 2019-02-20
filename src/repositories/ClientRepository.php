@@ -22,8 +22,9 @@ class ClientRepository implements ClientRepositoryInterface
      */
     public function getClientEntityByCredentials($identifier, $secret = null)
     {
+        /* @var $client ClientEntity */
         $client = ClientEntity::findOneByIdentifier($identifier);
-        if (empty($client)) {
+        if (empty($client) || !$client->getIsValid()) {
             return null;
         } elseif ($secret !== null && $client->secret !== $secret) {
             return null;

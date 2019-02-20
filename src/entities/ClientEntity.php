@@ -7,7 +7,6 @@
 namespace devzyj\yii2\oauth2\server\entities;
 
 use devzyj\oauth2\server\interfaces\ClientEntityInterface;
-use devzyj\yii2\oauth2\server\interfaces\OAuthClientEntityInterface;
 use devzyj\yii2\oauth2\server\models\OauthClient;
 use devzyj\yii2\oauth2\server\models\OauthClientScope;
 
@@ -20,12 +19,10 @@ use devzyj\yii2\oauth2\server\models\OauthClientScope;
  * @author ZhangYanJiong <zhangyanjiong@163.com>
  * @since 1.0
  */
-class ClientEntity extends OauthClient implements ClientEntityInterface, OAuthClientEntityInterface
+class ClientEntity extends OauthClient implements ClientEntityInterface
 {
     /**
-     * 获取客户端的权限。
-     * 
-     * @return \yii\db\ActiveQuery
+     * {@inheritdoc}
      */
     public function getOauthScopes()
     {
@@ -33,14 +30,12 @@ class ClientEntity extends OauthClient implements ClientEntityInterface, OAuthCl
     }
 
     /**
-     * 获取客户端的默认权限。
-     *
-     * @return \yii\db\ActiveQuery
+     * {@inheritdoc}
      */
     public function getDefaultOauthScopes()
     {
         return $this->hasMany(ScopeEntity::class, ['id' => 'scope_id'])->viaTable(OauthClientScope::tableName(), ['client_id' => 'id'], function ($query) {
-            $query->andWhere(['is_default'=>OauthClientScope::IS_DEFAULT_YES]);
+            $query->andWhere(['is_default' => OauthClientScope::IS_DEFAULT_YES]);
         });
     }
 
@@ -91,14 +86,5 @@ class ClientEntity extends OauthClient implements ClientEntityInterface, OAuthCl
     public function getDefaultScopeEntities()
     {
         return $this->defaultOauthScopes;
-    }
-
-    /******************************** OAuthClientEntityInterface ********************************/
-    /**
-     * {@inheritdoc}
-     */
-    public function getScopeEntities()
-    {
-        return $this->oauthScopes;
     }
 }

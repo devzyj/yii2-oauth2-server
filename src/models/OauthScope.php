@@ -14,6 +14,8 @@ use Yii;
  * @property int $id ID
  * @property string $identifier 标识
  * @property string $name 名称
+ * @property string $description 描述
+ * @property int $create_time 创建时间
  *
  * @property OauthClientScope[] $oauthClientScopes 客户端与权限的关联关系
  * @property OauthClient[] $oauthClients 客户端
@@ -43,6 +45,20 @@ class OauthScope extends \yii\db\ActiveRecord
     
         return parent::getDb();
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors()
+    {
+        return [
+            'timestampBehavior' => [
+                'class' => 'yii\behaviors\TimestampBehavior',
+                'createdAtAttribute' => 'create_time',
+                'updatedAtAttribute' => null,
+            ],
+        ];
+    }
     
     /**
      * {@inheritdoc}
@@ -51,7 +67,7 @@ class OauthScope extends \yii\db\ActiveRecord
     {
         return [
             [['identifier', 'name'], 'required'],
-            [['identifier'], 'string', 'max' => 255],
+            [['identifier', 'description'], 'string', 'max' => 255],
             [['name'], 'string', 'max' => 50],
             [['identifier'], 'unique'],
         ];
@@ -66,6 +82,8 @@ class OauthScope extends \yii\db\ActiveRecord
             'id' => 'ID',
             'identifier' => 'Identifier',
             'name' => 'Name',
+            'description' => 'Description',
+            'create_time' => 'Create Time',
         ];
     }
 
