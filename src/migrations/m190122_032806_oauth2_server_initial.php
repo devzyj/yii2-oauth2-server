@@ -108,10 +108,10 @@ class m190122_032806_oauth2_server_initial extends Migration
         $this->insert($this->tables['oauth_client'], [
             'name' => '测试客户端',
             'description' => '用于测试授权的客户端',
-            'identifier' => 'f4c22926e400ebca',
-            'secret' => '692569f364854bc130687297c770c2c0',
+            'identifier' => substr(md5(microtime().rand(1000, 9999)), 8, 16),
+            'secret' => md5(microtime().rand(1000, 9999)),
             'grant_types' => 'authorization_code implicit password client_credentials refresh_token',
-            'redirect_uri' => 'http://backend.application.yii2.devzyj.zyj/test/oauth-callback',
+            'redirect_uri' => '',
             'access_token_duration' => 3600, // 1 hours
             'refresh_token_duration' => 2592000, // 30 days
             'create_time' => time(),
