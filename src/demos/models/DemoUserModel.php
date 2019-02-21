@@ -6,8 +6,6 @@
  */
 namespace devzyj\yii2\oauth2\server\demos\models;
 
-use devzyj\yii2\oauth2\server\entities\ScopeEntity;
-
 /**
  * DemoUserModel class.
  * 
@@ -28,14 +26,6 @@ class DemoUserModel extends \yii\base\BaseObject
      * @var string 用户密码。
      */
     public $password;
-    /**
-     * @var string[] 用户权限。
-     */
-    public $scopes;
-    /**
-     * @var string[] 用户默认权限。
-     */
-    public $defaultScopes;
 
     /**
      * @var array 测试用户列表。
@@ -45,15 +35,11 @@ class DemoUserModel extends \yii\base\BaseObject
             'id' => '100',
             'username' => 'admin',
             'password' => 'admin',
-            'scopes' => [1, 2, 3],
-            'defaultScopes' => [1, 2],
         ],
         '101' => [
             'id' => '101',
             'username' => 'demo',
             'password' => 'demo',
-            'scopes' => [2, 3],
-            'defaultScopes' => [3],
         ],
     ];
     
@@ -94,25 +80,5 @@ class DemoUserModel extends \yii\base\BaseObject
     public function validatePassword($password)
     {
         return $this->password === $password;
-    }
-    
-    /**
-     * 获取用户的全部权限。
-     *
-     * @return ScopeEntity[]
-     */
-    public function getScopes()
-    {
-        return ScopeEntity::findAll($this->scopes);
-    }
-
-    /**
-     * 获取用户的全部默认权限。
-     *
-     * @return ScopeEntity[]
-     */
-    public function getDefaultScopes()
-    {
-        return ScopeEntity::findAll($this->defaultScopes);
     }
 }

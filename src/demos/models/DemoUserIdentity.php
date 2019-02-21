@@ -9,6 +9,7 @@ namespace devzyj\yii2\oauth2\server\demos\models;
 use Yii;
 use yii\web\IdentityInterface;
 use devzyj\yii2\oauth2\server\interfaces\OAuthIdentityInterface;
+use devzyj\yii2\oauth2\server\entities\ScopeEntity;
 
 /**
  * DemoUserIdentity class.
@@ -16,7 +17,7 @@ use devzyj\yii2\oauth2\server\interfaces\OAuthIdentityInterface;
  * @author ZhangYanJiong <zhangyanjiong@163.com>
  * @since 1.0
  */
-class DemoUserIdentity extends DemoUserModel implements IdentityInterface, OAuthIdentityInterface
+class DemoUserIdentity extends DemoUserEntity implements IdentityInterface, OAuthIdentityInterface
 {
     const OAUTH_IS_APPROVED_NAME = '__OAUTH_IS_APPROVED';
     const OAUTH_SCOPES_NAME = '__OAUTH_SCOPES';
@@ -82,15 +83,7 @@ class DemoUserIdentity extends DemoUserModel implements IdentityInterface, OAuth
      */
     public function getOAuthUserEntity()
     {
-        /* @var $model DemoUserEntity */
-        $model = Yii::createObject(DemoUserEntity::class);
-        $model->id = $this->id;
-        $model->username = $this->username;
-        $model->password = $this->password;
-        $model->scopes = $this->scopes;
-        $model->defaultScopes = $this->defaultScopes;
-        
-        return $model;
+        return $this;
     }
     
     /**
@@ -118,18 +111,8 @@ class DemoUserIdentity extends DemoUserModel implements IdentityInterface, OAuth
         if ($scopes === null) {
             return null;
         }
-
-        $result = [];
-        if ($scopes && is_array($scopes)) {
-            // 获取权限，并且过滤与用户无关的权限。
-            foreach ($this->getScopes() as $scopeEntity) {
-                if (in_array($scopeEntity->getIdentifier(), $scopes)) {
-                    $result[] = $scopeEntity;
-                }
-            }
-        }
         
-        return $result;
+        return ScopeEntity::findAll(['identifier' => $scopes]);
     }
 
     /**

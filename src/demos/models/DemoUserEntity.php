@@ -24,12 +24,4 @@ class DemoUserEntity extends DemoUserModel implements UserEntityInterface
     {
         return $this->id;
     }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getDefaultScopeEntities()
-    {
-        return $this->getDefaultScopes();
-    }
 }
