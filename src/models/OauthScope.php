@@ -88,6 +88,8 @@ class OauthScope extends \yii\db\ActiveRecord
     }
 
     /**
+     * 获取客户端与权限关联查询对像。
+     * 
      * @return \yii\db\ActiveQuery
      */
     public function getOauthClientScopes()
@@ -96,6 +98,8 @@ class OauthScope extends \yii\db\ActiveRecord
     }
 
     /**
+     * 获取客户端查询对像。
+     * 
      * @return \yii\db\ActiveQuery
      */
     public function getOauthClients()

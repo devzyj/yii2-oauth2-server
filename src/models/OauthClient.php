@@ -16,16 +16,16 @@ use Yii;
  * @property string $description 描述
  * @property string $identifier 标识
  * @property string $secret 密钥
- * @property string $grant_types 授权类型
- * @property string $redirect_uri 回调地址
+ * @property string $grant_types 授权类型（多个使用空隔符分隔）
+ * @property string $redirect_uri 回调地址（多个使用空隔符分隔）
  * @property int $access_token_duration 访问令牌的持续时间
  * @property int $refresh_token_duration 更新令牌的持续时间
  * @property int $create_time 创建时间
  * @property int $status 状态（0=禁用；1=可用）
  *
  * @property OauthClientScope[] $oauthClientScopes 客户端与权限的关联关系
- * @property OauthScope[] $oauthScopes 客户端的权限
- * @property OauthScope[] $defaultOauthScopes 客户端的默认权限
+ * @property OauthScope[] $oauthScopes 客户端权限
+ * @property OauthScope[] $defaultOauthScopes 客户端默认权限
  * 
  * @property boolean $isValid 客户端是否有效
  * @property string[] $grantTypes 客户端的授权类型
@@ -78,20 +78,6 @@ class OauthClient extends \yii\db\ActiveRecord
                 'createdAtAttribute' => 'create_time',
                 'updatedAtAttribute' => null,
             ],
-            'attributesBehavior' => [
-                'class' => 'yii\behaviors\AttributesBehavior',
-                'preserveNonEmptyValues' => true,
-                'attributes' => [
-                    'identifier' => [
-                        self::EVENT_BEFORE_INSERT => $fn = [static::class, 'generateIdentifier'],
-                        self::EVENT_BEFORE_UPDATE => $fn,
-                    ],
-                    'secret' => [
-                        self::EVENT_BEFORE_INSERT => $fn = [static::class, 'generateSecret'],
-                        self::EVENT_BEFORE_UPDATE => $fn,
-                    ],
-                ]
-            ],
         ];
     }
     
@@ -101,12 +87,16 @@ class OauthClient extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name'], 'required'],
+            [['name', 'identifier', 'secret'], 'required'],
             [['access_token_duration', 'refresh_token_duration', 'status'], 'integer'],
             [['name'], 'string', 'max' => 50],
             [['description', 'redirect_uri'], 'string', 'max' => 255],
+            [['identifier'], 'string', 'max' => 20],
+            [['secret'], 'string', 'max' => 32],
             [['grant_types'], 'string', 'max' => 100],
             [['name'], 'unique'],
+            [['identifier'], 'unique'],
+            [['secret'], 'unique'],
         ];
     }
 
@@ -131,6 +121,8 @@ class OauthClient extends \yii\db\ActiveRecord
     }
 
     /**
+     * 获取客户端与权限关联查询对像。
+     * 
      * @return \yii\db\ActiveQuery
      */
     public function getOauthClientScopes()
@@ -139,7 +131,7 @@ class OauthClient extends \yii\db\ActiveRecord
     }
 
     /**
-     * 获取客户端的权限。
+     * 获取客户端权限查询对像。
      * 
      * @return \yii\db\ActiveQuery
      */
@@ -149,7 +141,7 @@ class OauthClient extends \yii\db\ActiveRecord
     }
 
     /**
-     * 获取客户端的默认权限。
+     * 获取客户端默认权限查询对像。
      * 
      * @return \yii\db\ActiveQuery
      */
@@ -171,26 +163,6 @@ class OauthClient extends \yii\db\ActiveRecord
         return static::findOne(['identifier' => $identifier]);
     }
 
-    /**
-     * 生成客户端标识。
-     *
-     * @return string
-     */
-    public static function generateIdentifier()
-    {
-        return substr(md5(microtime().rand(1000, 9999)), 8, 16);
-    }
-    
-    /**
-     * 生成客户端密钥。
-     *
-     * @return string
-     */
-    public static function generateSecret()
-    {
-        return md5(microtime().rand(1000, 9999));
-    }
-    
     /**
      * 获取客户端是否有效。
      *
