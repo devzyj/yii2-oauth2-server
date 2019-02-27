@@ -49,11 +49,19 @@ return [
             'userRepositoryClass' => 'app\models\UserRepository',
             'user' => [
                 'class' => 'yii\web\User',
+                'identityClass' => 'app\models\UserIdentity',
             ],
             'loginUrl' => ['login'],
             'authorizationUrl' => ['authorization'],
-            'classMap' => [ // 依赖注入。替换模块中使用的类。
-                //'devzyj\yii2\oauth2\server\ServerRequest' => 'app\models\ServerRequest',
+            'classMap' => [ // 依赖注入。
+                'devzyj\oauth2\server\authorizes\CodeAuthorize' => [
+                    'class' => 'devzyj\oauth2\server\authorizes\CodeAuthorize',
+                    'enableCodeChallenge' => true, // 使用 `code_challenge`，默认为 `false`。
+                ],
+                'devzyj\oauth2\server\grants\AuthorizationCodeGrant' => [
+                    'class' => 'devzyj\oauth2\server\grants\AuthorizationCodeGrant',
+                    'enableCodeChallenge' => true, // 使用 `code_challenge`，默认为 `false`。
+                ],
                 ....
                 ....
             ],
